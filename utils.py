@@ -35,21 +35,35 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
         class_folder = glob.glob(path + '/' + category + '/*.jpg')
         for img_path in class_folder:
             try:
-                # Load and preprocess image
+                # Load image
                 image = plt.imread(img_path)
-                image = cv2.resize(image, (size, size))  # Resize to target dimensions
-                if len(image.shape) == 2:  # If grayscale, expand to match channel dimension
-                    image = np.expand_dims(image, axis=-1)
-                if image.shape[-1] == 4:  # Handle RGBA images
+
+                # Handle RGBA images (convert to RGB)
+                if image.shape[-1] == 4:
                     image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
-                image = image.astype('float32') / 255.0  # Normalize to [0, 1]
+
+                # Convert grayscale to RGB
+                if len(image.shape) == 2:
+                    image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+
+                # Resize to uniform dimensions
+                image = cv2.resize(image, (size, size))
+
+                # Transform to [0, 1]
+                image = image.astype('float32') / 255.0
+
                 X.append(image)
                 Y.append(category)
             except Exception as e:
                 print(f"Error loading image {img_path}: {e}")
+                continue
 
     print(f"Total images loaded: {len(X)}")
+
+    # Convert to numpy arrays
     X = np.array(X, dtype=np.float32)
+
+    # Normalize images to [-1, 1]
     X = transform_images(X)
 
     # Encode class labels
