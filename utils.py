@@ -22,7 +22,7 @@ def transform_images(images: np.ndarray):
     return images
 
 
-def load_mushroom_image_data(image_size=150, path='../Data/train', shuffle=False, class_frequency=False):
+def load_mushroom_image_data(image_size=150, path='https://drive.google.com/drive/folders/1-Fb9Q1aKEJIRbQmB4ZO8qn7n3ve-AbIZ?usp=drive_link', shuffle=False, class_frequency=False):
     size = image_size
     files = listdir(path)
     X = []
