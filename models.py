@@ -170,7 +170,7 @@ class SimpleCNNModel(ImageClassifierBase):
         conv5 = BatchNormalization()(conv5)
         conv5 = self._get_dropout(conv5, rate=0.2)
 
-        return [conv5]
+        return [conv5], callbacks
 
     def _classifier(self, concatenated_features):
         x = Flatten()(concatenated_features)
