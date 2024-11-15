@@ -70,10 +70,10 @@ def plot_GradCam(cam, model, image, true_label=None, name=None, uncertainty=Fals
     else:
         mc_iter = 1
 
-    if dataset == 'Xray':
-        class_text = ['Covid19', 'Normal', 'Pneumonia']
-    elif dataset == 'CT':
-        class_text = ['nCT', 'NiCT', 'pCT']
+    if dataset == 'Mushroom_Image':
+        class_text = ['Lactarius', 'Amanita', 'Boletus', 'Russula', 'Entoloma', 'Hygrocybe', 'Cortinarius', 'Suillus', 'Agaricus']
+    #elif dataset == 'CT':
+        #class_text = ['nCT', 'NiCT', 'pCT']
 
     for _ in range(mc_iter):
         preds = model.predict(image)
