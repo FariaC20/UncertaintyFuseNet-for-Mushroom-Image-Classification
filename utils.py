@@ -22,7 +22,7 @@ def transform_images(images: np.ndarray):
     return images
 
 
-def load_mushroom_data(image_size=150, path='./Mushrooms', shuffle=False, class_frequency=False):
+def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
     """
     Load and preprocess mushroom classification dataset.
     """
