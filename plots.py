@@ -17,7 +17,7 @@ def plot_roc_handy(y_test, y_score, lw=2, name='Roc', class_name=None, zoom=Fals
     if axis is None:
         axis = [0.0, 0.12, 0.88, 1.0]
     if class_name is None:
-        class_name = ['COVID19', 'Normal', 'Pneumonia']
+        class_name = ['Lactarius', 'Amanita', 'Boletus', 'Russula', 'Entoloma', 'Hygrocybe', 'Cortinarius', 'Suillus', 'Agaricus']
     fpr = dict()
     tpr = dict()
     roc_auc = dict()
@@ -90,11 +90,11 @@ def plot_roc_handy(y_test, y_score, lw=2, name='Roc', class_name=None, zoom=Fals
     ax.figure.savefig("{}.pdf".format(name), bbox_inches='tight')
 
 
-def plot_cm_handy(y_test, y_score, lw=2, name='Confusion Matrix of Fusion Model without Uncertainty (X-Ray)',
+def plot_cm_handy(y_test, y_score, lw=2, name='Confusion Matrix of Fusion Model without Uncertainty (Mushroom_Image)',
                   class_name=None):
 
     if class_name is None:
-        class_name = ['COVID19', 'Normal', 'Pneumonia']
+        class_name = ['Lactarius', 'Amanita', 'Boletus', 'Russula', 'Entoloma', 'Hygrocybe', 'Cortinarius', 'Suillus', 'Agaricus']
     CM = confusion_matrix(np.argmax(y_test, axis=1), np.argmax(y_score, axis=1))
     cm = CM
     cmap = plt.cm.Blues
@@ -132,10 +132,10 @@ def uncertainty_plot(model, image, label=None, save=True, name=None, mc_iter=200
     if label is not None:
         label_idx = np.argmax(label)
 
-    if dataset == 'Xray':
-        class_text = ['Covid19', 'Normal', 'Pneumonia']
-    elif dataset == 'CT':
-        class_text = ['nCT', 'NiCT', 'pCT']
+    if dataset == 'Mushroom_Image':
+        class_text = ['Lactarius', 'Amanita', 'Boletus', 'Russula', 'Entoloma', 'Hygrocybe', 'Cortinarius', 'Suillus', 'Agaricus']
+    #elif dataset == 'CT':
+        #class_text = ['nCT', 'NiCT', 'pCT']
 
     all_preds = []
     for _ in range(mc_iter):
