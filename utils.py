@@ -22,7 +22,7 @@ def transform_images(images: np.ndarray):
     return images
 
 
-def load_covid_data(image_size=150, path='../Data/train', shuffle=False, class_frequency=False):
+def load_mushroom_image_data(image_size=150, path='../Data/train', shuffle=False, class_frequency=False):
     size = image_size
     files = listdir(path)
     X = []
@@ -69,21 +69,21 @@ def load_covid_data(image_size=150, path='../Data/train', shuffle=False, class_f
     return X, Y
 
 
-def create_dataset_xray(x_train, y_train, x_test, y_test, batch_size=32):
-    train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-    train_dataset = train_dataset.batch(batch_size)
-    train_dataset = train_dataset.cache()
-    train_dataset = train_dataset.prefetch(tf.data.experimental.AUTOTUNE)
+#def create_dataset_xray(x_train, y_train, x_test, y_test, batch_size=32):
+ #   train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+  #  train_dataset = train_dataset.batch(batch_size)
+   # train_dataset = train_dataset.cache()
+    #train_dataset = train_dataset.prefetch(tf.data.experimental.AUTOTUNE)
 
-    validation_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
-    validation_dataset = validation_dataset.batch(batch_size)
-    validation_dataset = validation_dataset.cache()
-    validation_dataset = validation_dataset.prefetch(tf.data.experimental.AUTOTUNE)
+    #validation_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
+    #validation_dataset = validation_dataset.batch(batch_size)
+    #validation_dataset = validation_dataset.cache()
+    #validation_dataset = validation_dataset.prefetch(tf.data.experimental.AUTOTUNE)
 
-    return train_dataset, validation_dataset
+    #return train_dataset, validation_dataset
 
 
-def create_dataset_ct(X, Y, batch_size):
+def create_dataset_mushroom_image(X, Y, batch_size):
     np.random.seed(0)
     random.seed(0)
     idx = np.random.choice(len(X), size=len(X), replace=False)
