@@ -21,7 +21,7 @@ def transform_images(images: np.ndarray):
     images = 2 * images.astype(np.float32) - 1
     return images
 
-
+dataset_path = '/content/drive/MyDrive/Mushrooms'
 def load_mushroom_image_data(image_size=150, path=dataset_path, shuffle=False, class_frequency=False):
     size = image_size
     files = listdir(path)
