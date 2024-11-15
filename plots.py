@@ -127,7 +127,7 @@ def plot_cm_handy(y_test, y_score, lw=2, name='Confusion Matrix of Fusion Model 
     ax.figure.savefig("{}.pdf".format(name), bbox_inches='tight')
 
 
-def uncertainty_plot(model, image, label=None, save=True, name=None, mc_iter=200, dataset='Xray', ylim=20):
+def uncertainty_plot(model, image, label=None, save=True, name=None, mc_iter=200, dataset='Mushroom_Image', ylim=20):
     image = image[np.newaxis, :, :, :]
     if label is not None:
         label_idx = np.argmax(label)
