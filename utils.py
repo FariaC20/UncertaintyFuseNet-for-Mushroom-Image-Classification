@@ -21,84 +21,96 @@ def transform_images(images: np.ndarray):
     images = 2 * images.astype(np.float32) - 1
     return images
 
-dataset_path = '/content/drive/MyDrive/Mushrooms'
-def load_mushroom_image_data(image_size=150, path=dataset_path, shuffle=False, class_frequency=False):
+
+def load_mushroom_data(image_size=150, path='./Mushrooms', shuffle=False, class_frequency=False):
+    """
+    Load and preprocess mushroom classification dataset.
+    """
     size = image_size
-    files = listdir(path)
+    categories = listdir(path)  # Each folder represents a class
     X = []
     Y = []
 
-    for direct in files:
-        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
-        for file in files_in_folder:
-            data = plt.imread(file)
-            data = cv2.resize(data, (size, size))
-            data = data.astype('float32') / 255
-            if len(data.shape) > 2 and data.shape[2] == 3:
-                data = rgb2gray(data)
-            if len(data.shape) > 2 and data.shape[2] == 4:
-                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
-                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
-                data = rgb2gray(data)
-            X.append(data)
-            Y.append(direct)
+    for category in categories:
+        class_folder = glob.glob(path + '/' + category + '/*.jpg')
+        for img_path in class_folder:
+            try:
+                # Load and preprocess image
+                image = plt.imread(img_path)
+                image = cv2.resize(image, (size, size))  # Resize to target dimensions
+                if len(image.shape) == 2:  # If grayscale, expand to match channel dimension
+                    image = np.expand_dims(image, axis=-1)
+                if image.shape[-1] == 4:  # Handle RGBA images
+                    image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+                image = image.astype('float32') / 255.0  # Normalize to [0, 1]
+                X.append(image)
+                Y.append(category)
+            except Exception as e:
+                print(f"Error loading image {img_path}: {e}")
 
-    print(len(X))
-    X = np.array(X).astype(float)
+    print(f"Total images loaded: {len(X)}")
+    X = np.array(X, dtype=np.float32)
     X = transform_images(X)
-    X = X[:, :, :, None]
 
+    # Encode class labels
     le = LabelEncoder()
     Y = le.fit_transform(Y)
-    Y = np.array(Y).astype(float)
-    Y = to_categorical(Y, len(files))
+    Y = np.array(Y)
+    Y = to_categorical(Y, num_classes=len(categories))
 
+    # Shuffle data if required
     if shuffle:
-        idx = np.random.choice(len(X), size=len(X), replace=False)
-        X = X[idx, :, :]
-        Y = Y[idx, :]
+        idx = np.random.permutation(len(X))
+        X = X[idx]
+        Y = Y[idx]
+
+    # Plot class frequencies if required
     if class_frequency:
-        classes = le.inverse_transform(np.argmax(Y, axis=1).astype(int))
-        unique, counts = np.unique(classes, return_counts=True)
-        counts = np.array(counts)
+        class_labels = le.inverse_transform(np.argmax(Y, axis=1))
+        unique, counts = np.unique(class_labels, return_counts=True)
         plt.bar(unique, counts)
-        plt.title('Class Frequency(Percent)')
-        plt.xlabel('Class')
-        plt.ylabel('Frequency')
+        plt.title("Class Frequency (Percent)")
+        plt.xlabel("Class")
+        plt.ylabel("Frequency")
+        plt.xticks(rotation=45)
         plt.show()
+
     return X, Y
 
 
-#def create_dataset_xray(x_train, y_train, x_test, y_test, batch_size=32):
- #   train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
-  #  train_dataset = train_dataset.batch(batch_size)
-   # train_dataset = train_dataset.cache()
-    #train_dataset = train_dataset.prefetch(tf.data.experimental.AUTOTUNE)
+def create_dataset(X, Y, batch_size=32, test_size=0.3, random_state=42):
+    """
+    Split data into training and testing datasets and create TensorFlow datasets.
+    """
+    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=test_size, random_state=random_state)
 
-    #validation_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
-    #validation_dataset = validation_dataset.batch(batch_size)
-    #validation_dataset = validation_dataset.cache()
-    #validation_dataset = validation_dataset.prefetch(tf.data.experimental.AUTOTUNE)
-
-    #return train_dataset, validation_dataset
-
-
-def create_dataset_mushroom_image(X, Y, batch_size):
-    np.random.seed(0)
-    random.seed(0)
-    idx = np.random.choice(len(X), size=len(X), replace=False)
-    X = X[idx, :, :, :]
-    Y = Y[idx, :]
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=42)
-
+    # Create TensorFlow datasets
     train_dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train))
-    train_dataset = train_dataset.batch(batch_size)
-    train_dataset = train_dataset.cache()
-    train_dataset = train_dataset.prefetch(tf.data.experimental.AUTOTUNE)
+    train_dataset = train_dataset.shuffle(buffer_size=len(X_train)).batch(batch_size).cache().prefetch(tf.data.AUTOTUNE)
 
     validation_dataset = tf.data.Dataset.from_tensor_slices((X_test, y_test))
-    validation_dataset = validation_dataset.batch(batch_size)
-    validation_dataset = validation_dataset.cache()
-    validation_dataset = validation_dataset.prefetch(tf.data.experimental.AUTOTUNE)
+    validation_dataset = validation_dataset.batch(batch_size).cache().prefetch(tf.data.AUTOTUNE)
 
     return train_dataset, validation_dataset, X_train, X_test, y_train, y_test
+
+
+# Example usage
+if __name__ == "__main__":
+    # Downloaded and extracted dataset folder
+    dataset_path = '/content/drive/MyDrive/Mushrooms'  # Replace with your dataset folder path
+    
+    # Load and preprocess data
+    X, Y = load_mushroom_data(image_size=150, path=dataset_path, shuffle=True, class_frequency=True)
+
+    # Save the preprocessed data as numpy arrays (like CT_X.npy and CT_Y.npy)
+    np.save('Mushroom_X.npy', X)
+    np.save('Mushroom_Y.npy', Y)
+
+    # Load the saved numpy arrays (optional for reuse later)
+    X = np.load('Mushroom_X.npy')
+    Y = np.load('Mushroom_Y.npy')
+
+    # Create train and validation datasets
+    train_dataset, val_dataset, X_train, X_test, y_train, y_test = create_dataset(X, Y, batch_size=32)
+
+    print("Dataset prepared and saved successfully!")
