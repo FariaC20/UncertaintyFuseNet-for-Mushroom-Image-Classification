@@ -2,7 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pyplot import figure
-from scipy import interp
+from scipy.interpolate import interp
 from itertools import cycle
 from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import confusion_matrix
