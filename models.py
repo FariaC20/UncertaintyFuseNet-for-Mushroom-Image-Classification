@@ -29,9 +29,9 @@ class ImageClassifierBase:
             for i, layer in enumerate(model.layers):
                 layer.set_weights(self.trained_model.layers[i].get_weights())
 
-        callbacks = None if self.trunc else self._get_callbacks()
+        callback = None if self.trunc else self._get_callbacks()
 
-        return model, callbacks
+        return model, callback
 
     def _compile_model(self, model):
         adam = tf.keras.optimizers.Adam(lr=self.lr)
