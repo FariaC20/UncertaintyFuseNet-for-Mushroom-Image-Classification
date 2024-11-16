@@ -22,41 +22,48 @@ def transform_images(images: np.ndarray):
     images = 2 * images.astype(np.float32) - 1
     return images
 
-def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
+def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=True, class_frequency=False):
     """
-    Loads mushroom image data from the specified path.
+    Loads and preprocesses mushroom image data.
 
     Args:
-        image_size (int): The desired size of the images.
-        path (str): The path to the dataset folder.
-        shuffle (bool, optional): Whether to shuffle the data. Defaults to True.
-        class_frequency (bool, optional): Whether to calculate class frequencies. Defaults to True.
+        image_size (tuple): Desired size for resizing images (default: (150, 150)).
+        path (str): Path to the dataset folder (default: 'Data').
+        shuffle (bool): Whether to shuffle the data (default: True).
+        class_frequency (bool): Whether to calculate class frequencies (default: False).
 
     Returns:
-        tuple: A tuple containing the image data (X) and labels (Y).
+        tuple: A tuple containing the preprocessed images (X) and labels (Y).
     """
-    size = image_size
     X = []
     Y = []
-    labels = ['Lactarius', 'Amanita', 'Boletus', 'Russula', 'Entoloma', 'Hygrocybe', 'Cortinarius', 'Suillus', 'Agaricus']
-    label_map = {label: i for i, label in enumerate(labels)}
+    labels = {'Agaricus': 0, 'Boletus': 1, 'Destroying Angel': 2, 'Entoloma': 3, 'Hygrocybe': 4,
+              'Lactarius': 5, 'Russula': 6, 'Suillus': 7}  # Define your class labels here
 
-    for i, direct in enumerate(labels):
-        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
-        for file in files_in_folder:
-            try:
-                data = plt.imread(file)
-                data = cv2.resize(data, (size, size))
-                data = data.astype('float32') / 255
-                X.append(data)
-                Y.append(label_map[direct])
-            except OSError as e:
-                print(f"Error loading image {file}: {e}")
-                # You can choose to skip the corrupted image or handle it differently
+    for folder in os.listdir(path):
+        label = labels.get(folder)  # Get label for the current folder
 
-    X = np.array(X)
+        if label is not None:  # Skip folders not in the labels dictionary
+            folder_path = os.path.join(path, folder)
+
+            for filename in os.listdir(folder_path):
+                img_path = os.path.join(folder_path, filename)
+                try:
+                    # Load and resize image using OpenCV
+                    img = cv2.imread(img_path)
+                    if img is not None:  # Check if image was loaded successfully
+                        img = cv2.resize(img, image_size)
+                        X.append(img)
+                        Y.append(label)
+                    else:
+                        print(f"Warning: Could not load image: {img_path}") 
+                except Exception as e:
+                    print(f"Error loading or processing image {img_path}: {e}")
+                    # Handle the error appropriately, e.g., skip the image or raise an exception
+
+    # Convert to numpy array outside the loop after all images are processed
+    X = np.array(X)  
     Y = np.array(Y)
-
     if class_frequency:
         print("Class Frequency:", Counter(Y))
 
