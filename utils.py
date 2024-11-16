@@ -23,43 +23,47 @@ def transform_images(images: np.ndarray):
     return images
 
 def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
+       """
+    Load mushroom image data from the specified path.
+
+    Args:
+        image_size (int): The desired size to resize the images to.
+        path (str): The path to the dataset folder.
+        shuffle (bool): Whether to shuffle the data.
+        class_frequency (bool): Whether to calculate class frequencies.
+
+    Returns:
+        Tuple[np.ndarray, np.ndarray]: The image data and corresponding labels.
+    """
+
     size = image_size
-    files = listdir(path)
+    direct = ['Agaricus', 'Amanita', 'Boletus', 'Cortinarius', 'Entoloma', 'Hygrocybe',
+              'Lactarius', 'Russula', 'Suillus'] 
     X = []
     Y = []
-
-    for direct in files:
-        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
+    for i in range(len(direct)):
+        files_in_folder = glob.glob(path + '/' + direct[i] + '/*.jpg')
         for file in files_in_folder:
-            data = plt.imread(file)
-            data = cv2.resize(data, (size, size))
-            data = data.astype('float32') / 255
-            if len(data.shape) > 2 and data.shape[2] == 3:
-                data = rgb2gray(data)
-            if len(data.shape) > 2 and data.shape[2] == 4:
-                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
-                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
-                data = rgb2gray(data)
-            X.append(data)
-            Y.append(direct)
+            try:
+                data = plt.imread(file)
+                data = cv2.resize(data, (size, size))
+                data = data.astype('float32') / 255
+                X.append(data)
+                Y.append(i)
+            except OSError as e:
+                print(f"Error reading file {file}: {e}")
+                # You can choose to skip the file or handle it differently
 
-    print(len(X))
-    X = np.array(X).astype(float)
-    X = transform_images(X)
-    X = X[:, :, :, None]
-
-    le = LabelEncoder()
-    Y = le.fit_transform(Y)
-    Y = np.array(Y).astype(float)
-    Y = to_categorical(Y, len(files))
-
+    X = np.array(X)
+    Y = np.array(Y)
     if shuffle:
-        idx = np.random.choice(len(X), size=len(X), replace=False)
-        X = X[idx, :, :]
-        Y = Y[idx, :]
+        X, Y = shuffle(X, Y, random_state=42)  # Shuffle data
+
     if class_frequency:
-        classes = le.inverse_transform(np.argmax(Y, axis=1).astype(int))
-        unique, counts = np.unique(classes, return_counts=True)
+        # Calculate class frequencies
+        unique, counts = np.unique(Y, return_counts=True)
+        class_frequency = dict(zip(unique, counts))
+        print("Class Frequencies:", class_frequency)
         counts = np.array(counts)
         plt.bar(unique, counts)
         plt.title('Class Frequency(Percent)')
