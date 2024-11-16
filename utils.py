@@ -32,19 +32,24 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
     for direct in files:
         files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
         for file in files_in_folder:
-            data = plt.imread(file)
-            data = cv2.resize(data, (size, size))
-            data = data.astype('float32') / 255
-            if len(data.shape) > 2 and data.shape[2] == 3:
-                data = rgb2gray(data)
-            if len(data.shape) > 2 and data.shape[2] == 4:
-                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
-                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
-                data = rgb2gray(data)
-            X.append(data)
-            Y.append(direct)
+            try:
+                data = plt.imread(file)
+                data = cv2.resize(data, (size, size))
+                data = data.astype('float32') / 255
+                if len(data.shape) > 2 and data.shape[2] == 3:
+                    data = rgb2gray(data)
+                if len(data.shape) > 2 and data.shape[2] == 4:
+                    data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
+                    data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                    data = rgb2gray(data)
+                X.append(data)
+                Y.append(direct)
+            except OSError as e:
+                print(f"Skipped file {file} due to error: {e}")
+            except Exception as e:
+                print(f"Unexpected error occurred with file {file}: {e}")
 
-    print(len(X))
+    print(f"Total valid images loaded: {len(X)}")
     X = np.array(X).astype(float)
     X = transform_images(X)
     X = X[:, :, :, None]
@@ -63,7 +68,7 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
         unique, counts = np.unique(classes, return_counts=True)
         counts = np.array(counts)
         plt.bar(unique, counts)
-        plt.title('Class Frequency(Percent)')
+        plt.title('Class Frequency (Percent)')
         plt.xlabel('Class')
         plt.ylabel('Frequency')
         plt.show()
