@@ -67,11 +67,20 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
         classes = le.inverse_transform(np.argmax(Y, axis=1).astype(int))
         unique, counts = np.unique(classes, return_counts=True)
         counts = np.array(counts)
+          # Plotting with improved readability
+        plt.figure(figsize=(10, 6))  # Adjust the figure size for better visibility
         plt.bar(unique, counts)
         plt.title('Class Frequency (Percent)')
         plt.xlabel('Class')
         plt.ylabel('Frequency')
+        plt.xticks(rotation=45, ha='right', fontsize=10)  # Rotate labels for readability
+        plt.tight_layout()  # Ensure the layout fits well within the figure
         plt.show()
+        #plt.bar(unique, counts)
+        #plt.title('Class Frequency (Percent)')
+        #plt.xlabel('Class')
+        #plt.ylabel('Frequency')
+        #plt.show()
     return X, Y
 
 def create_dataset(X, Y, batch_size):
