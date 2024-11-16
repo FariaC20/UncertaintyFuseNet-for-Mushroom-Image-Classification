@@ -8,6 +8,7 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
+import os
 
 
 def rgb2gray(rgb):
@@ -27,29 +28,25 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
     Load and preprocess mushroom classification dataset.
     """
     size = image_size
-    categories = listdir(path)  # Each folder represents a class
+    categories = [d for d in listdir(path) if os.path.isdir(os.path.join(path, d))]  # Each folder represents a class
     X = []
     Y = []
 
     for category in categories:
-        class_folder = glob.glob(path + '/' + category + '/*.jpg')
+        class_folder = glob.glob(os.path.join(path, category, '*.jpg'))  # Adjust for dataset images
         for img_path in class_folder:
             try:
                 # Load image
-                image = plt.imread(img_path)
+                image = cv2.imread(img_path)
 
-                # Handle RGBA images (convert to RGB)
-                if image.shape[-1] == 4:
-                    image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
-
-                # Convert grayscale to RGB
+                # Convert grayscale to RGB if needed
                 if len(image.shape) == 2:
                     image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
 
                 # Resize to uniform dimensions
                 image = cv2.resize(image, (size, size))
 
-                # Transform to [0, 1]
+                # Normalize to [0, 1]
                 image = image.astype('float32') / 255.0
 
                 X.append(image)
@@ -89,7 +86,7 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
         plt.xticks(rotation=45)
         plt.show()
 
-    return X, Y
+    return X, Y, categories
 
 
 def create_dataset(X, Y, batch_size=32, test_size=0.3, random_state=42):
@@ -110,13 +107,13 @@ def create_dataset(X, Y, batch_size=32, test_size=0.3, random_state=42):
 
 # Example usage
 if __name__ == "__main__":
-    # Downloaded and extracted dataset folder
-    dataset_path = '/content/drive/MyDrive/Mushrooms'  # Replace with your dataset folder path
+    # Specify dataset folder path
+    dataset_path = '/content/drive/MyDrive/Mushrooms'  # Replace with the actual dataset folder path from Kaggle
     
     # Load and preprocess data
-    X, Y = load_mushroom_data(image_size=150, path=dataset_path, shuffle=True, class_frequency=True)
+    X, Y, categories = load_mushroom_data(image_size=150, path=dataset_path, shuffle=True, class_frequency=True)
 
-    # Save the preprocessed data as numpy arrays (like CT_X.npy and CT_Y.npy)
+    # Save the preprocessed data as numpy arrays
     np.save('Mushroom_X.npy', X)
     np.save('Mushroom_Y.npy', Y)
 
@@ -127,4 +124,5 @@ if __name__ == "__main__":
     # Create train and validation datasets
     train_dataset, val_dataset, X_train, X_test, y_train, y_test = create_dataset(X, Y, batch_size=32)
 
-    print("Dataset prepared and saved successfully!")
+    print(f"Dataset prepared with {len(categories)} classes: {categories}")
+    print("Training and validation datasets are ready!")
