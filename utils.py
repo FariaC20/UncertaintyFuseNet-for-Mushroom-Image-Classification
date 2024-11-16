@@ -22,33 +22,51 @@ def transform_images(images: np.ndarray):
     images = 2 * images.astype(np.float32) - 1
     return images
 
-def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=True, class_frequency=False):
-    size = image_size
+def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=True, class_frequency=True):
+     """
+    Loads mushroom image data from the specified path.
+
+    Args:
+        image_size (int): Desired size for resizing images.
+        path (str): Path to the dataset directory.
+        shuffle (bool, optional): Whether to shuffle the data. Defaults to True.
+        class_frequency (bool, optional): Whether to calculate class frequencies. Defaults to True.
+
+    Returns:
+        tuple: A tuple containing the image data and labels.
+    """
     X = []
     Y = []
-    labels = ['Agaricus', 'Amanita', 'Boletus', 'Cortinarius', 'Entoloma', 'Hygrocybe', 'Lactarius', 'Russula', 'Suillus']
-    label_dict = {'Agaricus': 0, 'Amanita': 1, 'Boletus': 2, 'Cortinarius': 3, 'Entoloma': 4, 'Hygrocybe': 5, 'Lactarius': 6, 'Russula': 7, 'Suillus': 8}
-    for direct in labels:
-        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
-        for file in files_in_folder:
-            try:
-                data = plt.imread(file)
-                data = cv2.resize(data, (size, size))
-                data = data.astype('float32') / 255
-                X.append(data)
-                Y.append(label_dict[direct])
-            except OSError as e:
-                print(f"Skipping corrupted file: {file} - {e}")  # Print an error message and skip the file
+    labels = {}
+    current_label = 0
 
-    print(len(X))
-    X = np.array(X).astype(float)
-    X = transform_images(X)
-    X = X[:, :, :, None]
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".jpg") or file.endswith(".png"):  # Adjust file extensions if necessary
+                file_path = os.path.join(root, file)
+                
+                # Use Pillow to open and resize the image ensuring consistency
+                image = Image.open(file_path)
+                image = image.resize((image_size, image_size))
+                image_np = np.array(image)
+                
+                # Check if the image has 3 channels (RGB)
+                if image_np.ndim != 3 or image_np.shape[2] != 3:
+                    # If not, convert it to RGB
+                    image_np = cv2.cvtColor(image_np, cv2.COLOR_GRAY2RGB)
+                
+                X.append(image_np)
 
-    le = LabelEncoder()
-    Y = le.fit_transform(Y)
-    Y = np.array(Y).astype(float)
-    Y = to_categorical(Y, len(files))
+
+                label_name = os.path.basename(os.path.dirname(file_path))
+                if label_name not in labels:
+                    labels[label_name] = current_label
+                    current_label += 1
+                Y.append(labels[label_name])
+
+    # Convert to NumPy arrays after ensuring all images have the same dimensions
+    X = np.array(X)
+    Y = np.array(Y)
 
     if shuffle:
         idx = np.random.choice(len(X), size=len(X), replace=False)
