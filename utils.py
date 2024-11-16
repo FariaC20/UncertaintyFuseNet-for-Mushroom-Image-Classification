@@ -36,8 +36,7 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
     Returns:
         Tuple[np.ndarray, np.ndarray]: The image data and corresponding labels.
     """
-
-    size = image_size
+    size =image_size 
     direct = ['Agaricus', 'Amanita', 'Boletus', 'Cortinarius', 'Entoloma', 'Hygrocybe',
               'Lactarius', 'Russula', 'Suillus'] 
     X = []
