@@ -24,24 +24,21 @@ def transform_images(images: np.ndarray):
 
 def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=True, class_frequency=False):
     size = image_size
-    files = listdir(path)
     X = []
     Y = []
-
-    for direct in files:
+    labels = ['Agaricus', 'Amanita', 'Boletus', 'Cortinarius', 'Entoloma', 'Hygrocybe', 'Lactarius', 'Russula', 'Suillus']
+    label_dict = {'Agaricus': 0, 'Amanita': 1, 'Boletus': 2, 'Cortinarius': 3, 'Entoloma': 4, 'Hygrocybe': 5, 'Lactarius': 6, 'Russula': 7, 'Suillus': 8}
+    for direct in labels:
         files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
         for file in files_in_folder:
-            data = plt.imread(file)
-            data = cv2.resize(data, (size, size))
-            data = data.astype('float32') / 255
-            if len(data.shape) > 2 and data.shape[2] == 3:
-                data = rgb2gray(data)
-            if len(data.shape) > 2 and data.shape[2] == 4:
-                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
-                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
-                data = rgb2gray(data)
-            X.append(data)
-            Y.append(direct)
+            try:
+                data = plt.imread(file)
+                data = cv2.resize(data, (size, size))
+                data = data.astype('float32') / 255
+                X.append(data)
+                Y.append(label_dict[direct])
+            except OSError as e:
+                print(f"Skipping corrupted file: {file} - {e}")  # Print an error message and skip the file
 
     print(len(X))
     X = np.array(X).astype(float)
