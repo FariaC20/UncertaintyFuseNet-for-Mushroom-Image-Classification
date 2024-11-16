@@ -35,8 +35,8 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
     Returns:
         tuple: A tuple containing the image data and labels.
     """
-    X = []
-    Y = []
+    X = []  
+    y = []
     labels = {}
     current_label = 0
 
