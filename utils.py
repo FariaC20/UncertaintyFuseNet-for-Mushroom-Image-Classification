@@ -23,40 +23,55 @@ def transform_images(images: np.ndarray):
     return images
 
 
-def load_mushroom_data(image_size, path, shuffle=True, class_frequency=False):
+def load_mushroom_data(image_size, path, shuffle, class_frequency):
     """
-    Loads mushroom image data from the specified path.
+    Load and preprocess mushroom image data.
 
     Args:
-        image_size (int): The desired size for resizing images.
+        image_size (int): The desired size for resizing the images.
         path (str): The path to the dataset folder.
-        shuffle (bool, optional): Whether to shuffle the data. Defaults to True.
-        class_frequency (bool, optional): Whether to adjust class weights based on frequency. Defaults to False.
+        shuffle (bool): Whether to shuffle the data.
+        class_frequency (bool): Whether to calculate class frequencies.
 
     Returns:
-        tuple: A tuple containing the image data (X) and labels (Y).
+        tuple: A tuple containing the preprocessed images (X) and labels (Y).
     """
-    size = image_size
     X = []
     Y = []
-    class_labels = {'Agaricus': 0,'Amanita': 1,'Boletus': 2,'Cortinarius': 3,'Entoloma': 4, 'Hygrocybe': 6,'Lactarius': 7,'Russula': 8,  'Suillus': 9}
+    classes = os.listdir(path)
+    num_classes = len(classes)
 
-    for direct in os.listdir(path):
-        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
-        for file in files_in_folder:
+    for class_index, class_name in enumerate(classes):
+        class_path = os.path.join(path, class_name)
+        image_files = os.listdir(class_path)
+
+        for image_file in image_files:
+            image_path = os.path.join(class_path, image_file)
             try:
-                data = plt.imread(file)
-                data = cv2.resize(data, (size, size))
-                data = data.astype('float32') / 255
-                X.append(data)
-                Y.append(class_labels[direct]) 
-            except OSError as e:
-                print(f"Skipping corrupted image: {file} due to error: {e}")
+                # Open the image using Pillow library
+                image = Image.open(image_path)
+                
+                # Resize the image while preserving aspect ratio
+                image.thumbnail((image_size, image_size)) 
+                
+                # Pad the image if necessary to ensure consistent dimensions
+                image_array = np.array(image)
+                
+                # Calculate padding for each dimension
+                pad_height = image_size - image_array.shape[0]
+                pad_width = image_size - image_array.shape[1]
+                
+                # Apply padding to the image
+                image_array = np.pad(image_array, ((0, pad_height), (0, pad_width), (0, 0)), mode='constant')
+                
+                X.append(image_array)
+                Y.append(class_index)  # Assuming class_index is the label
+            except Exception as e:
+                print(f"Error loading image {image_path}: {e}")
                 continue  # Skip to the next image
 
     X = np.array(X)
     Y = np.array(Y)
-
     if shuffle:
         from sklearn.utils import shuffle
         X, Y = shuffle(X, Y, random_state=42)  # Shuffle data
