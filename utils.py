@@ -38,7 +38,7 @@ def load_mushroom_data(image_size, path, shuffle=True, class_frequency=True):
     size = image_size
     X = []
     Y = []
-    labels = ['Agaricus', 'Boletus', 'Destroying Angel']
+    labels = ['Lactarius', 'Amanita', 'Boletus', 'Russula', 'Entoloma', 'Hygrocybe', 'Cortinarius', 'Suillus', 'Agaricus']
     label_map = {label: i for i, label in enumerate(labels)}
 
     for i, direct in enumerate(labels):
