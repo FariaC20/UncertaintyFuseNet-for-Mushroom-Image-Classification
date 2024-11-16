@@ -78,10 +78,11 @@ def load_mushroom_data(image_size, path, shuffle, class_frequency):
 
     if class_frequency:
         from sklearn.utils.class_weight import compute_class_weight
-        class_weights = compute_class_weight('balanced', np.unique(Y), Y)
+        # Convert Y to a 1D array of integer labels
+        Y_labels = np.array([y for sublist in Y for y in sublist])  
+        class_weights = compute_class_weight('balanced', np.unique(Y_labels), Y_labels)
         class_weights = dict(enumerate(class_weights))
-        print("Class Weights:", class_weights)
-        return X, Y, class_weights 
+        print("Class Weights:", class_weights) 
 
     return X, Y  # Return data and labels
 
