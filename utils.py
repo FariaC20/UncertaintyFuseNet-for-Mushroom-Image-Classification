@@ -23,7 +23,7 @@ def transform_images(images: np.ndarray):
     return images
 
 def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
-     size = image_size
+    size = image_size
     files = listdir(path)
     X = []
     Y = []
