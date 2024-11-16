@@ -23,57 +23,51 @@ def transform_images(images: np.ndarray):
     return images
 
 def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=True, class_frequency=False):
-    """
-    Loads and preprocesses mushroom image data.
-
-    Args:
-        image_size (tuple): Desired size for resizing images (default: (150, 150)).
-        path (str): Path to the dataset folder (default: 'Data').
-        shuffle (bool): Whether to shuffle the data (default: True).
-        class_frequency (bool): Whether to calculate class frequencies (default: False).
-
-    Returns:
-        tuple: A tuple containing the preprocessed images (X) and labels (Y).
-    """
+    size = image_size
+    files = listdir(path)
     X = []
     Y = []
-    labels = {'Agaricus': 0, 'Boletus': 1, 'Destroying Angel': 2, 'Entoloma': 3, 'Hygrocybe': 4,
-              'Lactarius': 5, 'Russula': 6, 'Suillus': 7}  # Define your class labels here
 
-    for folder in os.listdir(path):
-        label = labels.get(folder)  # Get label for the current folder
+    for direct in files:
+        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
+        for file in files_in_folder:
+            data = plt.imread(file)
+            data = cv2.resize(data, (size, size))
+            data = data.astype('float32') / 255
+            if len(data.shape) > 2 and data.shape[2] == 3:
+                data = rgb2gray(data)
+            if len(data.shape) > 2 and data.shape[2] == 4:
+                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
+                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                data = rgb2gray(data)
+            X.append(data)
+            Y.append(direct)
 
-        if label is not None:  # Skip folders not in the labels dictionary
-            folder_path = os.path.join(path, folder)
+    print(len(X))
+    X = np.array(X).astype(float)
+    X = transform_images(X)
+    X = X[:, :, :, None]
 
-            for filename in os.listdir(folder_path):
-                img_path = os.path.join(folder_path, filename)
-                try:
-                    # Load and resize image using OpenCV
-                    img = cv2.imread(img_path)
-                    if img is not None:  # Check if image was loaded successfully
-                        img = cv2.resize(img, image_size)
-                        X.append(img)
-                        Y.append(label)
-                    else:
-                        print(f"Warning: Could not load image: {img_path}") 
-                except Exception as e:
-                    print(f"Error loading or processing image {img_path}: {e}")
-                    # Handle the error appropriately, e.g., skip the image or raise an exception
-
-    # Convert to numpy array outside the loop after all images are processed
-    X = np.array(X)  
-    Y = np.array(Y)
-    if class_frequency:
-        print("Class Frequency:", Counter(Y))
+    le = LabelEncoder()
+    Y = le.fit_transform(Y)
+    Y = np.array(Y).astype(float)
+    Y = to_categorical(Y, len(files))
 
     if shuffle:
-        indices = np.arange(X.shape[0])
-        np.random.shuffle(indices)
-        X = X[indices]
-        Y = Y[indices]
-
+        idx = np.random.choice(len(X), size=len(X), replace=False)
+        X = X[idx, :, :]
+        Y = Y[idx, :]
+    if class_frequency:
+        classes = le.inverse_transform(np.argmax(Y, axis=1).astype(int))
+        unique, counts = np.unique(classes, return_counts=True)
+        counts = np.array(counts)
+        plt.bar(unique, counts)
+        plt.title('Class Frequency(Percent)')
+        plt.xlabel('Class')
+        plt.ylabel('Frequency')
+        plt.show()
     return X, Y
+
 def create_dataset(X, Y, batch_size):
     np.random.seed(0)
     random.seed(0)
