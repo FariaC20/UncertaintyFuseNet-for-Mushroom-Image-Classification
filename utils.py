@@ -39,8 +39,7 @@ def load_mushroom_data(image_size, path, shuffle=True, class_frequency=False):
     size = image_size
     X = []
     Y = []
-    class_labels = {'Agaricus': 0, 'Boletus': 1, 'DestroyingAngel': 2, 'Entoloma': 3,
-                     'Lactarius': 4, 'Pluteus': 5, 'Russula': 6, 'Suillus': 7}
+    class_labels = {'Agaricus': 0,'Amanita': 1,'Boletus': 2,'Cortinarius': 3,'Entoloma': 4, 'Hygrocybe': 6,'Lactarius': 7,'Russula': 8,  'Suillus': 9}
 
     for direct in os.listdir(path):
         files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
