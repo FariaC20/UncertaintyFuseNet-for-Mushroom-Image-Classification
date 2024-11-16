@@ -112,17 +112,3 @@ if __name__ == "__main__":
     
     # Load and preprocess data
     X, Y, categories = load_mushroom_data(image_size=150, path=dataset_path, shuffle=True, class_frequency=True)
-
-    # Save the preprocessed data as numpy arrays
-    np.save('Mushroom_X.npy', X)
-    np.save('Mushroom_Y.npy', Y)
-
-    # Load the saved numpy arrays (optional for reuse later)
-    X = np.load('Mushroom_X.npy')
-    Y = np.load('Mushroom_Y.npy')
-
-    # Create train and validation datasets
-    train_dataset, val_dataset, X_train, X_test, y_train, y_test = create_dataset(X, Y, batch_size=32)
-
-    print(f"Dataset prepared with {len(categories)} classes: {categories}")
-    print("Training and validation datasets are ready!")
