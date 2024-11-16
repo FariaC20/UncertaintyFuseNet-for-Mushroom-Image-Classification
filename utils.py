@@ -23,69 +23,51 @@ def transform_images(images: np.ndarray):
     return images
 
 
-def load_mushroom_data(image_size, path, shuffle, class_frequency):
-    """
-    Load and preprocess mushroom image data.
-
-    Args:
-        image_size (int): The desired size for resizing the images.
-        path (str): The path to the dataset folder.
-        shuffle (bool): Whether to shuffle the data.
-        class_frequency (bool): Whether to calculate class frequencies.
-
-    Returns:
-        tuple: A tuple containing the preprocessed images (X) and labels (Y).
-    """
+def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
+    size = image_size
+    files = listdir(path)
     X = []
     Y = []
-    classes = os.listdir(path)
-    num_classes = len(classes)
 
-    for class_index, class_name in enumerate(classes):
-        class_path = os.path.join(path, class_name)
-        image_files = os.listdir(class_path)
+    for direct in files:
+        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
+        for file in files_in_folder:
+            data = plt.imread(file)
+            data = cv2.resize(data, (size, size))
+            data = data.astype('float32') / 255
+            if len(data.shape) > 2 and data.shape[2] == 3:
+                data = rgb2gray(data)
+            if len(data.shape) > 2 and data.shape[2] == 4:
+                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
+                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                data = rgb2gray(data)
+            X.append(data)
+            Y.append(direct)
 
-        for image_file in image_files:
-            image_path = os.path.join(class_path, image_file)
-            try:
-                # Open the image using Pillow library
-                image = Image.open(image_path)
-                
-                # Resize the image while preserving aspect ratio
-                image.thumbnail((image_size, image_size)) 
-                
-                # Pad the image if necessary to ensure consistent dimensions
-                image_array = np.array(image)
-                
-                # Calculate padding for each dimension
-                pad_height = image_size - image_array.shape[0]
-                pad_width = image_size - image_array.shape[1]
-                
-                # Apply padding to the image
-                image_array = np.pad(image_array, ((0, pad_height), (0, pad_width), (0, 0)), mode='constant')
-                
-                X.append(image_array)
-                Y.append(class_index)  # Assuming class_index is the label
-            except Exception as e:
-                print(f"Error loading image {image_path}: {e}")
-                continue  # Skip to the next image
+    print(len(X))
+    X = np.array(X).astype(float)
+    X = transform_images(X)
+    X = X[:, :, :, None]
 
-    X = np.array(X)
-    Y = np.array(Y)
+    le = LabelEncoder()
+    Y = le.fit_transform(Y)
+    Y = np.array(Y).astype(float)
+    Y = to_categorical(Y, len(files))
+
     if shuffle:
-        from sklearn.utils import shuffle
-        X, Y = shuffle(X, Y, random_state=42)  # Shuffle data
-
+        idx = np.random.choice(len(X), size=len(X), replace=False)
+        X = X[idx, :, :]
+        Y = Y[idx, :]
     if class_frequency:
-        from sklearn.utils.class_weight import compute_class_weight
-        # Convert Y to a 1D array of integer labels
-        Y_labels = np.array([y for sublist in Y for y in sublist])  
-        class_weights = compute_class_weight('balanced', np.unique(Y_labels), Y_labels)
-        class_weights = dict(enumerate(class_weights))
-        print("Class Weights:", class_weights) 
-
-    return X, Y  # Return data and labels
-
+        classes = le.inverse_transform(np.argmax(Y, axis=1).astype(int))
+        unique, counts = np.unique(classes, return_counts=True)
+        counts = np.array(counts)
+        plt.bar(unique, counts)
+        plt.title('Class Frequency(Percent)')
+        plt.xlabel('Class')
+        plt.ylabel('Frequency')
+        plt.show()
+    return X, Y
 def create_dataset(X, Y, batch_size):
     np.random.seed(0)
     random.seed(0)
