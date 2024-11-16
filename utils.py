@@ -22,51 +22,36 @@ def transform_images(images: np.ndarray):
     images = 2 * images.astype(np.float32) - 1
     return images
 
-def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=True, class_frequency=True):
-     """
-    Loads mushroom image data from the specified path.
+def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
+     size = image_size
+    files = listdir(path)
+    X = []
+    Y = []
 
-    Args:
-        image_size (int): Desired size for resizing images.
-        path (str): Path to the dataset directory.
-        shuffle (bool, optional): Whether to shuffle the data. Defaults to True.
-        class_frequency (bool, optional): Whether to calculate class frequencies. Defaults to True.
+    for direct in files:
+        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
+        for file in files_in_folder:
+            data = plt.imread(file)
+            data = cv2.resize(data, (size, size))
+            data = data.astype('float32') / 255
+            if len(data.shape) > 2 and data.shape[2] == 3:
+                data = rgb2gray(data)
+            if len(data.shape) > 2 and data.shape[2] == 4:
+                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
+                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
+                data = rgb2gray(data)
+            X.append(data)
+            Y.append(direct)
 
-    Returns:
-        tuple: A tuple containing the image data and labels.
-    """
-    X = []  
-    y = []
-    labels = {}
-    current_label = 0
+    print(len(X))
+    X = np.array(X).astype(float)
+    X = transform_images(X)
+    X = X[:, :, :, None]
 
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            if file.endswith(".jpg") or file.endswith(".png"):  # Adjust file extensions if necessary
-                file_path = os.path.join(root, file)
-                
-                # Use Pillow to open and resize the image ensuring consistency
-                image = Image.open(file_path)
-                image = image.resize((image_size, image_size))
-                image_np = np.array(image)
-                
-                # Check if the image has 3 channels (RGB)
-                if image_np.ndim != 3 or image_np.shape[2] != 3:
-                    # If not, convert it to RGB
-                    image_np = cv2.cvtColor(image_np, cv2.COLOR_GRAY2RGB)
-                
-                X.append(image_np)
-
-
-                label_name = os.path.basename(os.path.dirname(file_path))
-                if label_name not in labels:
-                    labels[label_name] = current_label
-                    current_label += 1
-                Y.append(labels[label_name])
-
-    # Convert to NumPy arrays after ensuring all images have the same dimensions
-    X = np.array(X)
-    Y = np.array(Y)
+    le = LabelEncoder()
+    Y = le.fit_transform(Y)
+    Y = np.array(Y).astype(float)
+    Y = to_categorical(Y, len(files))
 
     if shuffle:
         idx = np.random.choice(len(X), size=len(X), replace=False)
@@ -82,6 +67,7 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
         plt.ylabel('Frequency')
         plt.show()
     return X, Y
+
 
 def create_dataset(X, Y, batch_size):
     np.random.seed(0)
