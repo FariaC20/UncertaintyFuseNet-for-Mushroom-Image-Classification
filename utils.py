@@ -8,7 +8,7 @@ from tensorflow.keras.utils import to_categorical
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-
+from collections import Counter
 
 def rgb2gray(rgb):
     return np.dot(rgb[..., :3], [0.2989, 0.5870, 0.1140])
@@ -22,52 +22,53 @@ def transform_images(images: np.ndarray):
     return images
 
 
-def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
+def load_mushroom_data(image_size, path, shuffle=True, class_frequency=False):
+    """
+    Loads mushroom image data from the specified path.
+
+    Args:
+        image_size (int): The desired size for resizing images.
+        path (str): The path to the dataset folder.
+        shuffle (bool, optional): Whether to shuffle the data. Defaults to True.
+        class_frequency (bool, optional): Whether to adjust class weights based on frequency. Defaults to False.
+
+    Returns:
+        tuple: A tuple containing the image data (X) and labels (Y).
+    """
     size = image_size
-    files = listdir(path)
     X = []
     Y = []
+    class_labels = {'Agaricus': 0, 'Boletus': 1, 'DestroyingAngel': 2, 'Entoloma': 3,
+                     'Lactarius': 4, 'Pluteus': 5, 'Russula': 6, 'Suillus': 7}
 
-    for direct in files:
+    for direct in os.listdir(path):
         files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
         for file in files_in_folder:
-            data = plt.imread(file)
-            data = cv2.resize(data, (size, size))
-            data = data.astype('float32') / 255
-            if len(data.shape) > 2 and data.shape[2] == 3:
-                data = rgb2gray(data)
-            if len(data.shape) > 2 and data.shape[2] == 4:
-                data = cv2.cvtColor(data, cv2.COLOR_BGRA2BGR)
-                data = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
-                data = rgb2gray(data)
-            X.append(data)
-            Y.append(direct)
+            try:
+                data = plt.imread(file)
+                data = cv2.resize(data, (size, size))
+                data = data.astype('float32') / 255
+                X.append(data)
+                Y.append(class_labels[direct]) 
+            except OSError as e:
+                print(f"Skipping corrupted image: {file} due to error: {e}")
+                continue  # Skip to the next image
 
-    print(len(X))
-    X = np.array(X).astype(float)
-    X = transform_images(X)
-    X = X[:, :, :, None]
-
-    le = LabelEncoder()
-    Y = le.fit_transform(Y)
-    Y = np.array(Y).astype(float)
-    Y = to_categorical(Y, len(files))
+    X = np.array(X)
+    Y = np.array(Y)
 
     if shuffle:
-        idx = np.random.choice(len(X), size=len(X), replace=False)
-        X = X[idx, :, :]
-        Y = Y[idx, :]
-    if class_frequency:
-        classes = le.inverse_transform(np.argmax(Y, axis=1).astype(int))
-        unique, counts = np.unique(classes, return_counts=True)
-        counts = np.array(counts)
-        plt.bar(unique, counts)
-        plt.title('Class Frequency(Percent)')
-        plt.xlabel('Class')
-        plt.ylabel('Frequency')
-        plt.show()
-    return X, Y
+        from sklearn.utils import shuffle
+        X, Y = shuffle(X, Y, random_state=42)  # Shuffle data
 
+    if class_frequency:
+        from sklearn.utils.class_weight import compute_class_weight
+        class_weights = compute_class_weight('balanced', np.unique(Y), Y)
+        class_weights = dict(enumerate(class_weights))
+        print("Class Weights:", class_weights)
+        return X, Y, class_weights 
+
+    return X, Y  # Return data and labels
 
 def create_dataset(X, Y, batch_size):
     np.random.seed(0)
