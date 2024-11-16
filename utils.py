@@ -22,7 +22,7 @@ def transform_images(images: np.ndarray):
     images = 2 * images.astype(np.float32) - 1
     return images
 
-def load_mushroom_data(image_size, path, shuffle=True, class_frequency=True):
+def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', shuffle=False, class_frequency=False):
     """
     Loads mushroom image data from the specified path.
 
