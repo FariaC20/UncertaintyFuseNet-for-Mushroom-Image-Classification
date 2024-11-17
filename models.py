@@ -8,7 +8,7 @@ from abc import abstractmethod
 
 class ImageClassifierBase:
 
-    def __init__(self, input_shape=(150, 150, 1), lr, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
+    def __init__(self, input_shape, lr, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
         self.input_shape = input_shape
         self.lr = lr
         self.mc = mc
