@@ -38,7 +38,7 @@ class ImageClassifierBase:
 
         compile_dict = {
             "optimizer": adam,
-            "loss": "categorical_crossentropy"
+            "loss": "sparse_categorical_crossentropy"
         }
 
         if self.metrics:
