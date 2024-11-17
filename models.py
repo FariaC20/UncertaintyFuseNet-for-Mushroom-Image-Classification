@@ -81,7 +81,11 @@ class ImageClassifierBase:
         else:
             return Dropout(rate=rate)(input_tensor)
 
-
+    def fit(self, train_dataset, epochs, validation_data=None, class_weight=None, callbacks=None):
+        model, callbacks = self.get_model()
+        model = self._compile_model(model)
+        return model.fit(train_dataset, epochs=epochs, validation_data=validation_data, 
+                         class_weight=class_weight, callbacks=callbacks)
 # Our Proposed Fusion Model:
 class FusionModel(ImageClassifierBase):
 
