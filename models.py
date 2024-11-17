@@ -143,23 +143,16 @@ class FusionModel(ImageClassifierBase):
             x = self._get_dropout(x, rate=0.5)
             x = Dense(units=64, activation='relu')(x)
             x = self._get_dropout(x, rate=0.3)
-            x = Dense(9, activation='softmax')(x)
+            x = Dense(3, activation='softmax')(x)
 
         return x
 
 
 # Simple CNN Model:
-class SimpleCNNModel(tf.keras.Model):
+class SimpleCNNModel(ImageClassifierBase):
 
-    def __init__(self, input_shape, lr, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
-        super(SimpleCNNModel, self).__init__()
-        self.input_shape = input_shape
-        self.lr = lr
-        self.mc = mc
-        self.custom_metrics = metrics
-        self.trunc = trunc
-        self.trained_model = trained_model
-        self.model_name = model_name + "_with_mc" if self.mc else model_name + "_without_mc"
+    def __init__(self,  input_shape, lr, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
+        super().__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
 
     def _feature_extraction(self, inputs):
         conv1 = Conv2D(filters=16, kernel_size=(3, 3), activation='relu', padding='same')(inputs)
@@ -183,17 +176,13 @@ class SimpleCNNModel(tf.keras.Model):
         x = Flatten()(concatenated_features)
 
         x = Dense(units=128, activation='relu')(x)
-        
-    def compile(self, **kwargs): # use compile for defining the optimizer
-        super(SimpleCNNModel, self).compile(**kwargs) # use compile for defining the optimizer
-        self.mc_dropout_enabled = False # by default, it is turned off
-        
+
         if not self.trunc:
             x = self._get_dropout(x, rate=0.7)
             x = Dense(units=64, activation='relu')(x)
             x = self._get_dropout(x, rate=0.5)
 
-            x = Dense(9, activation='softmax')(x)
+            x = Dense(3, activation='softmax')(x)
 
         return x
 
@@ -235,6 +224,6 @@ class MultiHeadedModel(ImageClassifierBase):
             x = self._get_dropout(x, rate=0.7)
             x = Dense(units=64, activation='relu')(x)
             x = self._get_dropout(x, rate=0.5)
-            x = Dense(9, activation='softmax')(x)
+            x = Dense(3, activation='softmax')(x)
 
         return x
