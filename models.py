@@ -49,7 +49,7 @@ class ImageClassifierBase:
         return model
 
     def _get_callbacks(self):
-        model_checkpoint = ModelCheckpoint(f"{self.model_name}.h5", monitor='val_accuracy', mode='max', verbose=1,
+         model_checkpoint = ModelCheckpoint(f"{self.model_name}.keras", monitor='val_accuracy', mode='max', verbose=1,
                                            save_best_only=True)
 
         reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.8, verbose=1, patience=5)
