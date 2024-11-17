@@ -156,7 +156,7 @@ class SimpleCNNModel(tf.keras.Model):
         self.input_shape = input_shape
         self.lr = lr
         self.mc = mc
-        self.custom_metrics = custom_metrics
+        self.custom_metrics = metrics
         self.trunc = trunc
         self.trained_model = trained_model
         self.model_name = model_name + "_with_mc" if self.mc else model_name + "_without_mc"
