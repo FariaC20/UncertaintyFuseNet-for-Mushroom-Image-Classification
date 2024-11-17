@@ -42,7 +42,7 @@ class ImageClassifierBase:
         }
 
         if self.metrics:
-        compile_dict["metrics"] = ['accuracy'] + self._get_metrics()
+           compile_dict["metrics"] = ['accuracy'] + self._get_metrics()
 
         model.compile(**compile_dict))
 
