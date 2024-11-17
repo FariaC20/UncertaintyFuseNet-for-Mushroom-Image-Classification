@@ -30,7 +30,7 @@ def load_mushroom_data(image_size=150, path='/content/drive/MyDrive/Mushrooms', 
     Y = []
 
     for direct in files:
-        files_in_folder = glob.glob(path + '/' + direct + '/*.jpg')
+        files_in_folder = glob.glob(path + '/' + direct + '/*.*')
         for file in files_in_folder:
             try:
                 data = plt.imread(file)
