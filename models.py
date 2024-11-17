@@ -60,12 +60,10 @@ class ImageClassifierBase:
     def _feature_extraction(self, inputs):
         pass
 
-def _fusion_layer(self, *args):
-    """Fusion layer to combine the features from parallel CNNs."""
-    # Apply Flatten to each input tensor before concatenation
-    flattened = [Flatten()(layer) for layer in args]  # Change here
-    concatenated_tensor = Concatenate(axis=1)(flattened)
-    return concatenated_tensor
+    def _fusion_layer(self, *args):
+        flattened = [Flatten(layer) for layer in args]
+        concatenated_tensor = Concatenate(axis=1)(flattened)
+        return concatenated_tensor
 
     @abstractmethod
     def _classifier(self, concatenated_features):
