@@ -2,7 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.pyplot import figure
-from scipy.interpolate import interp1d as interp
+from scipy.interpolate import interp1d
 from itertools import cycle
 from sklearn.metrics import roc_curve, auc
 from sklearn.metrics import confusion_matrix
@@ -12,72 +12,71 @@ matplotlib.rc('ytick', labelsize=22)
 plt.rcParams.update({'font.size': 22})
 
 
-def plot_roc_handy(y_test, y_score, lw=2, name='Roc', class_name=None, zoom=False,
-                   axis=None):
+from scipy.interpolate import interp1d
+
+def plot_roc_handy(y_test, y_score, lw=2, name='Roc', class_name=None, zoom=False, axis=None):
     if axis is None:
         axis = [0.0, 0.12, 0.88, 1.0]
     if class_name is None:
         class_name = ['Lactarius', 'Amanita', 'Boletus', 'Russula', 'Entoloma', 'Hygrocybe', 'Cortinarius', 'Suillus', 'Agaricus']
+    
     fpr = dict()
     tpr = dict()
     roc_auc = dict()
 
-    for i in range(int(y_test.shape[1])):
+    # Compute ROC curve and ROC area for each class
+    for i in range(y_test.shape[1]):
         fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_score[:, i])
         roc_auc[i] = auc(fpr[i], tpr[i])
+
+    # Micro-average ROC
     fpr["micro"], tpr["micro"], _ = roc_curve(y_test.ravel(), y_score.ravel())
     roc_auc["micro"] = auc(fpr["micro"], tpr["micro"])
-    all_fpr = np.unique(np.concatenate([fpr[i] for i in range(int(y_test.shape[1]))]))
+
+    # Aggregate all FPRs
+    all_fpr = np.unique(np.concatenate([fpr[i] for i in range(y_test.shape[1])]))
     mean_tpr = np.zeros_like(all_fpr)
-    for i in range(int(y_test.shape[1])):
-        mean_tpr += interp(all_fpr, fpr[i], tpr[i])
-    mean_tpr /= int(y_test.shape[1])
+
+    # Interpolate all TPRs
+    for i in range(y_test.shape[1]):
+        interpolation = interp1d(fpr[i], tpr[i], kind="linear", bounds_error=False, fill_value=0)
+        mean_tpr += interpolation(all_fpr)
+
+    # Average TPR and compute macro-average ROC
+    mean_tpr /= y_test.shape[1]
     fpr["macro"] = all_fpr
     tpr["macro"] = mean_tpr
     roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
 
+    # Plotting
     f, ax = plt.subplots(figsize=[15, 15])
-
     ax.plot(fpr["micro"], tpr["micro"],
-            label='micro-average ROC curve (area = {0:0.2f})'
-                  ''.format(roc_auc["micro"]),
+            label=f'Micro-average ROC curve (area = {roc_auc["micro"]:0.2f})',
             color='deeppink', linestyle=':', linewidth=4)
     ax.plot(fpr["macro"], tpr["macro"],
-            label='macro-average ROC curve (area = {0:0.2f})'
-                  ''.format(roc_auc["macro"]),
+            label=f'Macro-average ROC curve (area = {roc_auc["macro"]:0.2f})',
             color='navy', linestyle=':', linewidth=4)
-    colors = cycle(['aqua', 'darkorange', 'cornflowerblue'])
-    for i, color in zip(range(int(y_test.shape[1])), colors):
+
+    colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'green', 'red', 'purple', 'brown', 'cyan', 'magenta'])
+    for i, color in zip(range(y_test.shape[1]), colors):
         ax.plot(fpr[i], tpr[i], color=color, lw=lw,
-                label='ROC curve of class {0} (area = {1:0.2f})'
-                      ''.format(class_name[i], roc_auc[i]))
+                label=f'ROC curve of class {class_name[i]} (area = {roc_auc[i]:0.2f})')
+
     ax.plot([0, 1], [0, 1], 'k--', lw=lw)
-    ax.set_xlim([0.001, 1.0])
-    ax.set_ylim([0, 1.05])
+    ax.set_xlim([0.0, 1.0])
+    ax.set_ylim([0.0, 1.05])
     ax.set_xlabel('False Positive Rate', fontsize=22)
     ax.set_ylabel('True Positive Rate', fontsize=22)
     ax.set_title(name, fontsize=22)
     ax.legend(loc="lower right")
 
-    # inset axes....
+    # Optional zoomed inset
     if zoom:
         axins = ax.inset_axes([0.3, 0.4, 0.4, 0.4])
-        for i, color in zip(range(int(y_test.shape[1])), colors):
-            if fpr[i].all() < 0.2 and tpr[i].all() < 0.95:
-                axins.plot(fpr[i], tpr[i], color=color, lw=lw,
-                           label='ROC curve of class {0} (area = {1:0.2f})'
-                                 ''.format(class_name[i], roc_auc[i]))
-
-                axins.plot(fpr["micro"], tpr["micro"],
-                           label='micro-average ROC curve (area = {0:0.2f})'
-                                 ''.format(roc_auc["micro"]),
-                           color='deeppink', linestyle=':', linewidth=4)
-
-                axins.plot(fpr["macro"], tpr["macro"],
-                           label='macro-average ROC curve (area = {0:0.2f})'
-                                 ''.format(roc_auc["macro"]),
-                           color='navy', linestyle=':', linewidth=4)
-
+        for i, color in zip(range(y_test.shape[1]), colors):
+            axins.plot(fpr[i], tpr[i], color=color, lw=lw)
+        axins.plot(fpr["micro"], tpr["micro"], color='deeppink', linestyle=':', linewidth=4)
+        axins.plot(fpr["macro"], tpr["macro"], color='navy', linestyle=':', linewidth=4)
         x1, x2, y1, y2 = axis
         axins.set_xlim(x1, x2)
         axins.set_ylim(y1, y2)
@@ -86,7 +85,7 @@ def plot_roc_handy(y_test, y_score, lw=2, name='Roc', class_name=None, zoom=Fals
         ax.indicate_inset_zoom(axins)
 
     plt.show()
-    f.savefig('{}.pdf'.format(name))
+    f.savefig(f'{name}.pdf', bbox_inches='tight')
     ax.figure.savefig("{}.pdf".format(name), bbox_inches='tight')
 
 
