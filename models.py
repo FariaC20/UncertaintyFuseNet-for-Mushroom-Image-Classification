@@ -61,9 +61,11 @@ class ImageClassifierBase:
         pass
 
     def _fusion_layer(self, *args):
-        flattened = [Flatten(layer) for layer in args]
-        concatenated_tensor = Concatenate(axis=1)(flattened)
-        return concatenated_tensor
+    # The Flatten layer expects a data_format argument, not a tensor.
+    # Use 'channels_last' as the default data format.
+    flattened = [Flatten(data_format='channels_last')(layer) for layer in args]  
+    concatenated_tensor = Concatenate(axis=1)(flattened)
+    return concatenated_tensor
 
     @abstractmethod
     def _classifier(self, concatenated_features):
