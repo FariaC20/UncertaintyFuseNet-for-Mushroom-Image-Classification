@@ -34,7 +34,7 @@ class ImageClassifierBase:
         return model, callbacks
 
     def _compile_model(self, model):
-        adam = tf.keras.optimizers.Adam(lr=self.lr)
+        adam = tf.keras.optimizers.Adam(learning_rate=self.lr)
 
         compile_dict = {
             "optimizer": adam,
