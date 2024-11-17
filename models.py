@@ -152,7 +152,7 @@ class FusionModel(ImageClassifierBase):
 class SimpleCNNModel(tf.keras.Model):
 
     def __init__(self, input_shape, lr, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
-        super(SimpleCNNModel, self).__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
+        super(SimpleCNNModel, self).__init__()
 
     def _feature_extraction(self, inputs):
         conv1 = Conv2D(filters=16, kernel_size=(3, 3), activation='relu', padding='same')(inputs)
