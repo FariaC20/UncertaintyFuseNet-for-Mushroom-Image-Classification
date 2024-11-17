@@ -147,7 +147,7 @@ class FusionModel(ImageClassifierBase):
             x = self._get_dropout(x, rate=0.5)
             x = Dense(units=64, activation='relu')(x)
             x = self._get_dropout(x, rate=0.3)
-            x = Dense(9, activation='softmax')(x)
+        x = Dense(9, activation='softmax')(x)
 
         return x
 
@@ -186,7 +186,7 @@ class SimpleCNNModel(ImageClassifierBase):
             x = Dense(units=64, activation='relu')(x)
             x = self._get_dropout(x, rate=0.5)
 
-            x = Dense(9, activation='softmax')(x)
+        x = Dense(9, activation='softmax')(x)
 
         return x
 
@@ -228,6 +228,7 @@ class MultiHeadedModel(ImageClassifierBase):
             x = self._get_dropout(x, rate=0.7)
             x = Dense(units=64, activation='relu')(x)
             x = self._get_dropout(x, rate=0.5)
-            x = Dense(9, activation='softmax')(x)
+            
+        x = Dense(9, activation='softmax')(x)
 
         return x
