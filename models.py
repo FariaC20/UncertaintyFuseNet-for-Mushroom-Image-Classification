@@ -61,7 +61,7 @@ class ImageClassifierBase:
         pass
 
     def _fusion_layer(self, *args):
-        flattened = [Flatten(layer) for layer in args]
+        flattened = [Flatten()(layer) for layer in args]  # Corrected this line
         concatenated_tensor = Concatenate(axis=1)(flattened)
         return concatenated_tensor
 
