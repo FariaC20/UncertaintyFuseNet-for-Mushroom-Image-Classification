@@ -176,9 +176,11 @@ class SimpleCNNModel(tf.keras.Model):
         x = Flatten()(concatenated_features)
 
         x = Dense(units=128, activation='relu')(x)
-  def compile(self, **kwargs): # use compile for defining the optimizer
-    super(SimpleCNNModel, self).compile(**kwargs) # use compile for defining the optimizer
-    self.mc_dropout_enabled = False # by default, it is turned off
+        
+    def compile(self, **kwargs): # use compile for defining the optimizer
+        super(SimpleCNNModel, self).compile(**kwargs) # use compile for defining the optimizer
+        self.mc_dropout_enabled = False # by default, it is turned off
+        
         if not self.trunc:
             x = self._get_dropout(x, rate=0.7)
             x = Dense(units=64, activation='relu')(x)
