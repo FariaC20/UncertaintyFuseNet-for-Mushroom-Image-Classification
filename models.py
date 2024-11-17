@@ -153,6 +153,13 @@ class SimpleCNNModel(tf.keras.Model):
 
     def __init__(self, input_shape, lr, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
         super(SimpleCNNModel, self).__init__()
+        self.input_shape = input_shape
+        self.lr = lr
+        self.mc = mc
+        self.metrics = metrics
+        self.trunc = trunc
+        self.trained_model = trained_model
+        self.model_name = model_name
 
     def _feature_extraction(self, inputs):
         conv1 = Conv2D(filters=16, kernel_size=(3, 3), activation='relu', padding='same')(inputs)
