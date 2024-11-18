@@ -32,11 +32,12 @@ class ImageClassifierBase:
         callbacks = None if self.trunc else self._get_callbacks()
 
         return model, callbacks
+        
     def predict(self, X):
-        """
-        Pass through the model for prediction.
-        """
-        return self.model.predict(X)
+        """Predict method to make predictions using the built model."""
+        model, _ = self.get_model()
+        model = self._compile_model(model)
+        return model.predict(X)
         
     def _compile_model(self, model):
         adam = tf.keras.optimizers.Adam(learning_rate=self.lr)
