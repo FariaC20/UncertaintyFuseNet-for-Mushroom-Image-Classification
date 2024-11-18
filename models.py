@@ -99,10 +99,11 @@ class FusionModel(ImageClassifierBase):
         super().__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
 
     def _feature_extraction(self, inputs):
-        input2 = tf.stack([inputs, inputs, inputs], axis=3)[:, :, :, :, 0]
+        # Wrap tf.stack within a Lambda layer
+        input2 = Lambda(lambda x: tf.stack([x, x, x], axis=3)[:, :, :, :, 0])(inputs) 
         vgg_model = tf.keras.applications.VGG16(weights='imagenet',
                                                 include_top=False,
-                                                input_shape=(self.input_shape[0], self.input_shape[1], 3))
+                                                input_tensor=input2)
         vgg_model.trainable = False
 
         vgg_feature = vgg_model(input2)
