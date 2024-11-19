@@ -1,6 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Input, Lambda
 import tensorflow as tf
+from tensorflow.keras.layers import Layer
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, BatchNormalization, Concatenate
 from tensorflow.keras.layers import Conv2D, SeparableConv2D, MaxPool2D
