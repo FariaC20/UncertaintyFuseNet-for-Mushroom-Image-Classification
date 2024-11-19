@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, BatchNormali
 from tensorflow.keras.layers import Conv2D, SeparableConv2D, MaxPool2D
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from abc import abstractmethod
-
+from models import StackLayer 
 
 class ImageClassifierBase:
 
@@ -101,7 +101,8 @@ class FusionModel(ImageClassifierBase):
         super().__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
 
     def _feature_extraction(self, inputs):
-        class StackLayer(keras.layers.Layer):
+        @tf.keras.utils.register_keras_serializable()
+        class StackLayer(tf.keras.layers.Layer):
             def call(self, inputs):
                 stacked = tf.stack([inputs, inputs, inputs], axis=3)
                 return stacked[:, :, :, :, 0]
