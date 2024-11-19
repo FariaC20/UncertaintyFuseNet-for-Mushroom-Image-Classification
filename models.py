@@ -1,12 +1,13 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Input, Lambda
 import tensorflow as tf
+from tensorflow.keras.layers import Layer
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, BatchNormalization, Concatenate
 from tensorflow.keras.layers import Conv2D, SeparableConv2D, MaxPool2D
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 from abc import abstractmethod
-from models import StackLayer 
+import StackLayer 
 
 class ImageClassifierBase:
 
@@ -100,21 +101,22 @@ class FusionModel(ImageClassifierBase):
     def __init__(self,  input_shape=(150, 150, 1), lr=0.00005, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
         super().__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
 
+    
+    @tf.keras.utils.register_keras_serializable()
+    class StackLayer(Layer):
+        def call(self, inputs):
+            stacked = tf.stack([inputs, inputs, inputs], axis=3)
+            return stacked[:, :, :, :, 0]
     def _feature_extraction(self, inputs):
-        @tf.keras.utils.register_keras_serializable()
-        class StackLayer(tf.keras.layers.Layer):
-            def call(self, inputs):
-                stacked = tf.stack([inputs, inputs, inputs], axis=3)
-                return stacked[:, :, :, :, 0]
-
         input2 = StackLayer()(inputs)
-        
+    
         vgg_model = tf.keras.applications.VGG16(weights='imagenet',
-                                               include_top=False,
-                                               input_tensor=input2)
+                                           include_top=False,
+                                           input_tensor=input2)
         vgg_model.trainable = False
 
         vgg_feature = vgg_model(input2)
+
         # First conv block
         conv1 = Conv2D(filters=16, kernel_size=(3, 3), activation='relu', padding='same')(inputs)
         conv1 = Conv2D(filters=16, kernel_size=(3, 3), activation='relu', padding='same')(conv1)
