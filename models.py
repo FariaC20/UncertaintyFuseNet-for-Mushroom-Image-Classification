@@ -95,12 +95,12 @@ class ImageClassifierBase:
         return model.fit(train_dataset, epochs=epochs, validation_data=validation_data, 
                          class_weight=class_weight, callbacks=callbacks)
 # Our Proposed Fusion Model:
-class StackLayer(Layer): # Define the StackLayer
-    """
-    Implements the stacking logic for the fusion model.
-    """
+class StackLayer(keras.layers.Layer): # If it's a keras Layer, define it like this
     def __init__(self, **kwargs):
         super(StackLayer, self).__init__(**kwargs)
+
+    def call(self, inputs):
+        return tf.stack(inputs, axis=-1)
 
     def call(self, inputs):
         # Implement the stacking logic here
