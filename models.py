@@ -1,7 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Input, Lambda
 import tensorflow as tf
-from tensorflow.keras.layers import StackLayer
+from tensorflow.keras.layers import Layer
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, BatchNormalization, Concatenate
 from tensorflow.keras.layers import Conv2D, SeparableConv2D, MaxPool2D
@@ -95,19 +95,22 @@ class ImageClassifierBase:
         return model.fit(train_dataset, epochs=epochs, validation_data=validation_data, 
                          class_weight=class_weight, callbacks=callbacks)
 # Our Proposed Fusion Model:
-class FusionModel(ImageClassifierBase):
-
-    def __init__(self,  input_shape=(150, 150, 1), lr=0.00005, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
-        super().__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
-
-    
-class StackLayer(tf.keras.layers.Layer): # Or tf.keras.layers.Stack
+class StackLayer(Layer): # Define the StackLayer
+    """
+    Implements the stacking logic for the fusion model.
+    """
     def __init__(self, **kwargs):
         super(StackLayer, self).__init__(**kwargs)
 
     def call(self, inputs):
         # Implement the stacking logic here
+        # For example, stacking along the last axis:
         return tf.stack(inputs, axis=-1)
+class FusionModel(ImageClassifierBase):
+
+    def __init__(self,  input_shape=(150, 150, 1), lr=0.00005, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
+        super().__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
+
     def _feature_extraction(self, inputs):
         input2 = StackLayer()(inputs)
     
