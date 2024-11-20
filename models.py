@@ -1,7 +1,7 @@
 from tensorflow import keras
 from tensorflow.keras.layers import Input, Lambda
 import tensorflow as tf
-from tensorflow.keras.layers import StackLaye
+from tensorflow.keras.layers import StackLayer
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Flatten, Dropout, BatchNormalization, Concatenate
 from tensorflow.keras.layers import Conv2D, SeparableConv2D, MaxPool2D
@@ -109,7 +109,7 @@ class StackLayer(tf.keras.layers.Layer): # Or tf.keras.layers.Stack
         # Implement the stacking logic here
         return tf.stack(inputs, axis=-1)
     def _feature_extraction(self, inputs):
-        input2 = tf.keras.layers.Stack()(inputs)
+        input2 = StackLayer()(inputs)
     
         vgg_model = tf.keras.applications.VGG16(weights='imagenet',
                                            include_top=False,
