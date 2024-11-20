@@ -95,13 +95,24 @@ class ImageClassifierBase:
         return model.fit(train_dataset, epochs=epochs, validation_data=validation_data, 
                          class_weight=class_weight, callbacks=callbacks)
 # Our Proposed Fusion Model:
+
 class FusionModel(ImageClassifierBase):
 
     def __init__(self,  input_shape=(150, 150, 1), lr=0.00005, mc=True, metrics=True, trunc=False, trained_model=None, model_name="test"):
         super().__init__(input_shape, lr, mc, metrics, trunc, trained_model, model_name)
 
     def _feature_extraction(self, inputs):
-        input2 = tf.keras.layers.Concatenate(axis=-1)([inputs, inputs, inputs])
+        class StackLayer(Layer):
+              def __init__(self, **kwargs):
+                   super(StackLayer, self).__init__(**kwargs)
+
+               def call(self, inputs):
+               # Check if inputs is a list, otherwise, wrap it in a list
+               if not isinstance(inputs, list):
+                  inputs = [inputs]  
+               # The rest of your call method remains the same
+               return tf.stack(inputs, axis=-1)
+        input2 =  input2 = StackLayer()(inputs)
 
         vgg_model = tf.keras.applications.VGG16(weights='imagenet',
                                            include_top=False,
